@@ -46,19 +46,30 @@ app/
 Makefile                    xcodebuild wrapper
 ```
 
-## Distribution
+## Installation
 
-Distributed as a `.dmg`, outside the Mac App Store. The app is ad-hoc signed —
-on first launch users will see an "unidentified developer" warning and need to
-right-click → Open to allow it. This is a one-time step.
+```bash
+brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client
+```
 
-Notarization and Developer ID signing can be added later without code changes.
+This installs the app and the sixnetd daemon in one command. On first launch the
+app will ask for an admin password once to start the background service.
+
+**Uninstall:**
+```bash
+brew services stop sixnetd
+brew uninstall --cask sixnet-client
+brew uninstall sixnetd
+```
+
+Or use the Uninstall option in the app menu.
 
 ## Privileged operations
 
-Calls to `zerotier-cli` and writes to `/etc/resolver/` require root. The app uses
-`NSAppleScript` with `administrator privileges` — macOS shows its standard auth
-dialog on connect. No privileged helper daemon, no Apple Developer account required.
+All privileged operations (ZeroTier CLI, DNS resolver writes) go through
+[sixnetd](https://github.com/Mr-Chance-Productions-GmbH/sixnetd) — a background
+daemon that runs as root. The Swift app is entirely unprivileged and communicates
+with sixnetd via a Unix socket. No repeated auth dialogs after first launch.
 
 ## Related
 

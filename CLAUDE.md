@@ -98,15 +98,17 @@ Cross-platform (Linux, Windows) explicitly deferred — would be a separate effo
 **Form factor — menu bar app (MenuBarExtra, .window style).**
 Status visible at a glance, connect/disconnect without opening a full window.
 
-**Distribution — .dmg, no App Store.**
-Ad-hoc signed (no Apple Developer Program). Users allow "unidentified developer"
-on first launch. Notarization / Developer ID can be added later without code changes.
+**Distribution — Homebrew Cask.**
+`brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client`
+This installs the .app and the sixnetd daemon (as a formula dependency) in one
+command. Homebrew Cask bypasses Gatekeeper automatically — no "unidentified
+developer" dialog. No Apple Developer account required.
 
-**Privileged operations — via sixnetd daemon (see below).**
+Uninstall is equally clean: `brew uninstall --cask sixnet-client && brew uninstall sixnetd`.
+
+**Privileged operations — via sixnetd daemon.**
 The Swift app never calls zerotier-cli directly. All privileged operations and
 ZeroTier state reading go through the sixnetd daemon over a Unix socket.
-On first launch the app installs sixnetd as a macOS LaunchDaemon — one admin
-dialog ever. Subsequent launches just connect to the socket.
 
 **Daemon architecture — sixnetd, written in Go, separate repo.**
 See `~/projects/sixnetd` and https://github.com/Mr-Chance-Productions-GmbH/sixnetd
@@ -132,13 +134,16 @@ sixnetd is the single source of truth for all ZeroTier operations:
 sixnetd is independent of macOS — same Go binary runs on Linux (different
 packaging). The macOS LaunchDaemon install is macOS-specific; the code is not.
 
-**Daemon packaging — bundled inside the .app, built from source.**
-`make build` in this repo builds both the Swift app and sixnetd (requires Go
-toolchain). The sixnetd binary is bundled at:
-`SixnetClient.app/Contents/MacOS/sixnetd`
-On first launch the app installs it to:
-`/Library/Application Support/Sixnet/sixnetd`
-and registers `/Library/LaunchDaemons/de.mcp.sixnet.daemon.plist`.
+**Daemon packaging — Homebrew formula, not bundled in the .app.**
+The sixnetd binary is installed separately by Homebrew as a formula dependency
+of the sixnet-client cask. The Swift app does not bundle or install sixnetd itself.
+
+**First-launch flow:**
+1. App checks if `/var/run/sixnetd.sock` is alive (daemon running)
+2. If not: show one-time setup screen, explain what's happening
+3. Run `brew services start sixnetd` via NSAppleScript — one admin dialog, ever
+4. Daemon starts and is registered to auto-start at every boot
+5. Normal app flow continues
 
 **Mobile — future, additive, not a replacement.**
 The sixnet server stack and enrollment flow are unchanged on any platform.
