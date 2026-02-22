@@ -1,0 +1,10 @@
+# Build output (directory or symlink to nosync location)
+build
+
+# Xcode user-specific state (never commit these)
+app/*.xcodeproj/xcuserdata/
+app/*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# macOS
+.DS_Store
