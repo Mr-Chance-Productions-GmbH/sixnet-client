@@ -88,23 +88,30 @@ Local ZeroTier API (HTTP on port 9993, authtoken at `/var/lib/zerotier-one/autht
 - Enrollment URL (e.g. `https://enroll.v1.vertamob.com`)
 - Optionally: network name for display (e.g. "Q1 Office VPN")
 
-## Open Decisions
+## Decisions
 
-**Tech stack — not decided:**
+**Tech stack — Swift/SwiftUI, native macOS menu bar app.**
+Chose native over cross-platform (Tauri, Wails, KMP) to avoid integration friction
+with the menu bar. Swift is close enough to Kotlin to be learnable without pain.
+Cross-platform (Linux, Windows) explicitly deferred — would be a separate effort.
 
-- **Swift/SwiftUI + menu bar** — macOS native, best UX, fastest to build for macOS,
-  locks to Apple ecosystem
-- **Tauri (Rust + web frontend)** — cross-platform, good native feel, smaller binary
-  than Electron, requires Rust
-- **Wails (Go + web frontend)** — cross-platform, simpler than Tauri if Go is familiar
-- **Electron** — cross-platform, heaviest, but largest ecosystem
+**Form factor — menu bar app (MenuBarExtra, .window style).**
+Status visible at a glance, connect/disconnect without opening a full window.
 
-**macOS-first vs cross-platform from the start** — not decided.
-macOS is the natural first target (admin uses macOS, initial users likely macOS).
-Cross-platform (Linux, Windows) is appealing but adds significant scope.
+**Distribution — .dmg, no App Store.**
+Ad-hoc signed (no Apple Developer Program). Users allow "unidentified developer"
+on first launch. Notarization / Developer ID can be added later without code changes.
 
-**Form factor** — menu bar app seems right for macOS. Status visible at a glance,
-connect/disconnect without opening a full window.
+**Privileged operations — NSAppleScript with administrator privileges.**
+No SMAppService helper daemon (requires paid Apple enrollment + Team ID).
+Standard macOS auth dialog on connect. Simple, battle-tested, works without a
+Developer account.
+
+**Build artifacts — never on synced filesystems.**
+`build/` in the project should be a symlink outside any cloud sync scope.
+Convention: `mkdir-nosync build` (personal tooling, not part of this repo)
+creates `~/.nosync/projects/sixnet-client/build` and symlinks it.
+The Makefile uses `BUILD_DIR = build` and has no opinion on the machine layout.
 
 ## Immediate Driver
 
