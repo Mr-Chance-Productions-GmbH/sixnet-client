@@ -102,10 +102,49 @@ Status visible at a glance, connect/disconnect without opening a full window.
 Ad-hoc signed (no Apple Developer Program). Users allow "unidentified developer"
 on first launch. Notarization / Developer ID can be added later without code changes.
 
-**Privileged operations — NSAppleScript with administrator privileges.**
-No SMAppService helper daemon (requires paid Apple enrollment + Team ID).
-Standard macOS auth dialog on connect. Simple, battle-tested, works without a
-Developer account.
+**Privileged operations — via sixnetd daemon (see below).**
+The Swift app never calls zerotier-cli directly. All privileged operations and
+ZeroTier state reading go through the sixnetd daemon over a Unix socket.
+On first launch the app installs sixnetd as a macOS LaunchDaemon — one admin
+dialog ever. Subsequent launches just connect to the socket.
+
+**Daemon architecture — sixnetd, written in Go, separate repo.**
+See `~/projects/sixnetd` and https://github.com/Mr-Chance-Productions-GmbH/sixnetd
+
+The layer stack:
+```
+ZeroTier daemon
+    ↓
+zerotier-cli + ZeroTier HTTP API on :9993   ← ZeroTier layer
+    ↓
+sixnetd (Go daemon, Unix socket)            ← all business logic + sudo
+    /var/run/sixnetd.sock
+    ↓
+SixnetClient Swift app                      ← pure UI, no privileged ops
+```
+
+sixnetd is the single source of truth for all ZeroTier operations:
+- Reads authtoken at startup (runs as root, no repeated auth dialogs)
+- Manages join/leave, DNS resolver setup, connection modes
+- Exposes a JSON protocol over a Unix socket
+- vpn/zt bash wrapper will eventually be rewritten to talk to sixnetd too
+
+sixnetd is independent of macOS — same Go binary runs on Linux (different
+packaging). The macOS LaunchDaemon install is macOS-specific; the code is not.
+
+**Daemon packaging — bundled inside the .app, built from source.**
+`make build` in this repo builds both the Swift app and sixnetd (requires Go
+toolchain). The sixnetd binary is bundled at:
+`SixnetClient.app/Contents/MacOS/sixnetd`
+On first launch the app installs it to:
+`/Library/Application Support/Sixnet/sixnetd`
+and registers `/Library/LaunchDaemons/de.mcp.sixnet.daemon.plist`.
+
+**Mobile — future, additive, not a replacement.**
+The sixnet server stack and enrollment flow are unchanged on any platform.
+iOS would use a Network Extension, Android a VPNService — platform-specific
+wrappers around the same concepts. sixnetd serves as the reference implementation
+and protocol spec for any future platform daemon equivalent.
 
 **Build artifacts — never on synced filesystems.**
 `build/` in the project should be a symlink outside any cloud sync scope.
