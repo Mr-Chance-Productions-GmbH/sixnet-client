@@ -10,6 +10,8 @@
 		AA00000000000000000000FA /* SixnetClientApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007A /* SixnetClientApp.swift */; };
 		AA000000000000000000010A /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000008A /* MenuBarView.swift */; };
 		AA000000000000000000011A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000BA /* Assets.xcassets */; };
+		AA000000000000000000019A /* DaemonClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000018A /* DaemonClient.swift */; };
+		AA00000000000000000001BA /* AddNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000001AA /* AddNetworkView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,8 @@
 		AA000000000000000000009A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA00000000000000000000AA /* SixnetClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SixnetClient.entitlements; sourceTree = "<group>"; };
 		AA00000000000000000000BA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA000000000000000000018A /* DaemonClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonClient.swift; sourceTree = "<group>"; };
+		AA00000000000000000001AA /* AddNetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNetworkView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,7 +56,9 @@
 			isa = PBXGroup;
 			children = (
 				AA000000000000000000007A /* SixnetClientApp.swift */,
+				AA000000000000000000018A /* DaemonClient.swift */,
 				AA000000000000000000008A /* MenuBarView.swift */,
+				AA00000000000000000001AA /* AddNetworkView.swift */,
 				AA00000000000000000000BA /* Assets.xcassets */,
 				AA000000000000000000009A /* Info.plist */,
 				AA00000000000000000000AA /* SixnetClient.entitlements */,
@@ -125,7 +131,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA00000000000000000000FA /* SixnetClientApp.swift in Sources */,
+				AA000000000000000000019A /* DaemonClient.swift in Sources */,
 				AA000000000000000000010A /* MenuBarView.swift in Sources */,
+				AA00000000000000000001BA /* AddNetworkView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
