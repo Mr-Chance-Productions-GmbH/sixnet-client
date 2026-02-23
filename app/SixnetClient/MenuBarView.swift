@@ -117,12 +117,8 @@ struct NetworkRow: View {
     func connectedRow(state: NetworkState) -> some View {
         HStack(spacing: 8) {
             Text(state.mode.uppercased())
-                .font(.caption.bold())
-                .padding(.horizontal, 5)
-                .padding(.vertical, 2)
-                .background(Color.green.opacity(0.15))
-                .foregroundStyle(.green)
-                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .font(.caption)
+                .foregroundStyle(.secondary)
             if let ip = state.assignedIP {
                 Text(ip)
                     .font(.caption.monospaced())
