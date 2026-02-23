@@ -138,12 +138,18 @@ packaging). The macOS LaunchDaemon install is macOS-specific; the code is not.
 The sixnetd binary is installed separately by Homebrew as a formula dependency
 of the sixnet-client cask. The Swift app does not bundle or install sixnetd itself.
 
-**First-launch flow:**
-1. App checks if `/var/run/sixnetd.sock` is alive (daemon running)
-2. If not: show one-time setup screen, explain what's happening
-3. Run `brew services start sixnetd` via NSAppleScript — one admin dialog, ever
-4. Daemon starts and is registered to auto-start at every boot
-5. Normal app flow continues
+**No LaunchDaemon. No system integration. No plist anywhere.**
+The formula installs a binary only. The app starts it on demand.
+
+**Daemon lifecycle:**
+- App launches → checks if `/var/run/sixnetd.sock` is alive
+- If not: runs `sudo /opt/homebrew/bin/sixnetd` via NSAppleScript — one admin dialog
+- Daemon keeps running when app quits — VPN stays connected mid-session
+- Next app launch → socket still alive → no dialog needed
+- After reboot → first app launch → one admin dialog again
+
+This is the Unix model: start the process when needed, no system registration
+required. No LaunchDaemon, no walled-garden lifecycle management.
 
 **Mobile — future, additive, not a replacement.**
 The sixnet server stack and enrollment flow are unchanged on any platform.
