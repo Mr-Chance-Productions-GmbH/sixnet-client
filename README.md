@@ -38,10 +38,12 @@ After `make clean`, recreate the symlink before building again.
 app/
   SixnetClient.xcodeproj/   Xcode project (committed, no generator tool)
   SixnetClient/             Swift source files
-    SixnetClientApp.swift   App entry point, MenuBarExtra setup
-    MenuBarView.swift       Menu bar panel UI
+    SixnetClientApp.swift   App entry point, AppDelegate, daemon lifecycle
+    DaemonClient.swift      Unix socket client, multi-network state, polling
+    MenuBarView.swift       Per-network rows: status, connect/disconnect
+    AddNetworkView.swift    Modal sheet: URL → fetch client.json → save
     Info.plist              Bundle config (LSUIElement=YES, no Dock icon)
-    SixnetClient.entitlements  No sandbox — needed for zerotier-cli calls
+    SixnetClient.entitlements  No sandbox
     Assets.xcassets/
 Makefile                    xcodebuild wrapper
 ```
@@ -57,12 +59,11 @@ app will ask for an admin password once to start the background service.
 
 **Uninstall:**
 ```bash
-brew services stop sixnetd
-brew uninstall --cask sixnet-client
-brew uninstall sixnetd
+brew uninstall --cask sixnet-client sixnetd
 ```
 
-Or use the Uninstall option in the app menu.
+No root required. The running sixnetd process exits on next reboot or can be
+killed manually (`pkill sixnetd`). No traces left in system directories.
 
 ## Privileged operations
 
