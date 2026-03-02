@@ -1,10 +1,11 @@
 import SwiftUI
 
-// Expected response from GET {url}/client.json:
+// Expected response from GET <url>:
 // {
 //   "networkId": "31655f6ec3a15f6d",
 //   "name": "Q1 Office VPN",
-//   "enrollUrl": "https://enroll.example.com"
+//   "enrollUrl": "https://enroll.example.com",
+//   "issuer": "https://auth.example.com"   // optional — enables Mode 2 PKCE enrollment
 // }
 
 struct AddNetworkView: View {
@@ -24,11 +25,11 @@ struct AddNetworkView: View {
                 Text("Enrollment URL")
                     .font(.callout)
                     .foregroundStyle(.secondary)
-                TextField("https://enroll.example.com", text: $urlInput)
+                TextField("https://enroll.example.com/q1/client.json", text: $urlInput)
                     .textFieldStyle(.roundedBorder)
                     .autocorrectionDisabled()
                     .onSubmit { Task { await add() } }
-                Text("Provided by your network administrator.")
+                Text("Config URL provided by your network administrator.")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -58,14 +59,13 @@ struct AddNetworkView: View {
 
     private func add() async {
         let raw = urlInput.trimmingCharacters(in: .whitespaces)
-        let baseString = raw.hasSuffix("/") ? String(raw.dropLast()) : raw
 
-        guard let base = URL(string: baseString) else {
+        guard let configURL = URL(string: raw) else {
             errorMessage = "Invalid URL"
             return
         }
 
-        if client.networks.contains(where: { $0.config.configURL == base.absoluteString }) {
+        if client.networks.contains(where: { $0.config.configURL == configURL.absoluteString }) {
             errorMessage = "This network is already in your list"
             return
         }
@@ -73,7 +73,6 @@ struct AddNetworkView: View {
         isFetching = true
         errorMessage = nil
 
-        let configURL = base.appendingPathComponent("client.json")
         do {
             let (data, response) = try await URLSession.shared.data(from: configURL)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else {
@@ -87,10 +86,11 @@ struct AddNetworkView: View {
             }
 
             let saved = SavedNetwork(
-                configURL: base.absoluteString,
+                configURL: configURL.absoluteString,
                 networkId: networkId,
                 name: name,
-                enrollURL: enrollURL
+                enrollURL: enrollURL,
+                issuer: json["issuer"] as? String
             )
             client.addNetwork(saved)
             dismiss()

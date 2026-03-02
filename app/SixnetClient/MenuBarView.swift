@@ -80,6 +80,8 @@ struct NetworkRow: View {
     @EnvironmentObject var client: DaemonClient
     let network: Network
 
+    @State private var showEnroll = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Name + status dot
@@ -109,6 +111,9 @@ struct NetworkRow: View {
             Button("Remove Network", role: .destructive) {
                 client.removeNetwork(network.id)
             }
+        }
+        .sheet(isPresented: $showEnroll) {
+            EnrollView(network: network).environmentObject(client)
         }
     }
 
@@ -154,6 +159,11 @@ struct NetworkRow: View {
                     .foregroundStyle(.tertiary)
                     .textSelection(.enabled)
             }
+            if let err = network.lastError {
+                Text(err.code)
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.orange)
+            }
         }
     }
 
@@ -163,7 +173,17 @@ struct NetworkRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            joinButton
+            if network.config.issuer != nil {
+                Button {
+                    showEnroll = true
+                } label: {
+                    busyLabel("Join")
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(network.isBusy)
+            } else {
+                joinButton
+            }
         }
     }
 

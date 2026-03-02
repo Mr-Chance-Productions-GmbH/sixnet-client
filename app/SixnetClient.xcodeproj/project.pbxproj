@@ -12,6 +12,8 @@
 		AA000000000000000000011A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000000BA /* Assets.xcassets */; };
 		AA000000000000000000019A /* DaemonClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000018A /* DaemonClient.swift */; };
 		AA00000000000000000001BA /* AddNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000001AA /* AddNetworkView.swift */; };
+		AA00000000000000000001DA /* PKCEEnrollment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000001CA /* PKCEEnrollment.swift */; };
+		AA00000000000000000001FA /* EnrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000001EA /* EnrollView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,8 @@
 		AA00000000000000000000BA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000000000000000000018A /* DaemonClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonClient.swift; sourceTree = "<group>"; };
 		AA00000000000000000001AA /* AddNetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNetworkView.swift; sourceTree = "<group>"; };
+		AA00000000000000000001CA /* PKCEEnrollment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PKCEEnrollment.swift; sourceTree = "<group>"; };
+		AA00000000000000000001EA /* EnrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrollView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +63,8 @@
 				AA000000000000000000018A /* DaemonClient.swift */,
 				AA000000000000000000008A /* MenuBarView.swift */,
 				AA00000000000000000001AA /* AddNetworkView.swift */,
+				AA00000000000000000001CA /* PKCEEnrollment.swift */,
+				AA00000000000000000001EA /* EnrollView.swift */,
 				AA00000000000000000000BA /* Assets.xcassets */,
 				AA000000000000000000009A /* Info.plist */,
 				AA00000000000000000000AA /* SixnetClient.entitlements */,
@@ -134,6 +140,8 @@
 				AA000000000000000000019A /* DaemonClient.swift in Sources */,
 				AA000000000000000000010A /* MenuBarView.swift in Sources */,
 				AA00000000000000000001BA /* AddNetworkView.swift in Sources */,
+				AA00000000000000000001DA /* PKCEEnrollment.swift in Sources */,
+				AA00000000000000000001FA /* EnrollView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,6 +1,47 @@
 import Foundation
 import AppKit
 
+// MARK: - Error Codes
+
+enum SixnetError: Error {
+    // Enrollment (E-1xx)
+    case oidcDiscoveryFailed        // E-101
+    case callbackTimeout            // E-102
+    case stateMismatch              // E-103
+    case tokenExchangeFailed        // E-104
+    case missingIdToken             // E-105
+    case enrollmentNotAvailable     // E-106  (404 from /claim — server is Mode 1 only)
+    case enrollmentRejected(Int)    // E-107
+
+    // Daemon / ZeroTier (E-2xx)
+    case daemonUnreachable          // E-201
+    case zerotierNotInstalled       // E-202
+    case joinFailed                 // E-203
+    case connectFailed              // E-204
+
+    // Configuration (E-3xx)
+    case invalidClientConfig        // E-301
+    case configFetchFailed          // E-302
+
+    var code: String {
+        switch self {
+        case .oidcDiscoveryFailed:      return "E-101"
+        case .callbackTimeout:          return "E-102"
+        case .stateMismatch:            return "E-103"
+        case .tokenExchangeFailed:      return "E-104"
+        case .missingIdToken:           return "E-105"
+        case .enrollmentNotAvailable:   return "E-106"
+        case .enrollmentRejected:       return "E-107"
+        case .daemonUnreachable:        return "E-201"
+        case .zerotierNotInstalled:     return "E-202"
+        case .joinFailed:               return "E-203"
+        case .connectFailed:            return "E-204"
+        case .invalidClientConfig:      return "E-301"
+        case .configFetchFailed:        return "E-302"
+        }
+    }
+}
+
 // MARK: - Models
 
 struct SavedNetwork: Codable {
@@ -8,6 +49,7 @@ struct SavedNetwork: Codable {
     let networkId: String
     let name: String
     let enrollURL: String
+    let issuer: String?     // present → Mode 2 PKCE enrollment available
 }
 
 struct NetworkState {
@@ -23,6 +65,7 @@ struct Network: Identifiable {
     var config: SavedNetwork
     var state: NetworkState?
     var isBusy: Bool = false
+    var lastError: SixnetError? = nil
 }
 
 // MARK: - Socket I/O (free functions, not actor-isolated)
@@ -131,8 +174,17 @@ class DaemonClient: ObservableObject {
     }
 
     func removeNetwork(_ networkId: String) {
-        networks.removeAll { $0.id == networkId }
-        persist()
+        Task {
+            _ = await sendRequest(["cmd": "leave", "networkId": networkId])
+            networks.removeAll { $0.id == networkId }
+            persist()
+        }
+    }
+
+    func setNetworkError(_ networkId: String, _ error: SixnetError?) {
+        if let i = networks.firstIndex(where: { $0.id == networkId }) {
+            networks[i].lastError = error
+        }
     }
 
     // MARK: Commands

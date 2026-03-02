@@ -88,6 +88,86 @@ Local ZeroTier API (HTTP on port 9993, authtoken at `/var/lib/zerotier-one/autht
 - Enrollment URL (e.g. `https://enroll.v1.vertamob.com`)
 - Optionally: network name for display (e.g. "Q1 Office VPN")
 
+## Mode 2 Enrollment — PKCE Flow
+
+**Mode 1:** user visits `enroll.<domain>` in a browser, pastes ZT node ID.
+**Mode 2** (implemented): device-initiated — the client handles the full OAuth PKCE flow
+and calls the enroll app's `/claim` endpoint directly. The user authenticates in the system
+browser; the client catches the callback and completes enrollment without manual copy-paste.
+
+### Flow
+
+```
+1. Fetch GET {enrollUrl}/client.json
+      → {issuer, clientId, enrollUrl, networkId, name}
+2. Fetch GET {issuer}/.well-known/openid-configuration
+      → discover authorization_endpoint, token_endpoint
+3. Generate PKCE pair:
+      code_verifier  = 96 random chars (base64url, no padding)
+      code_challenge = base64url(SHA256(code_verifier))
+4. Open system browser:
+      {authorization_endpoint}?client_id=sixnet-device-enroll
+        &redirect_uri=http://localhost:12345/callback
+        &response_type=code&scope=openid email profile
+        &code_challenge={code_challenge}&code_challenge_method=S256
+        &state={random-nonce}
+5. Start HTTP listener on localhost:12345
+      → catch redirect, extract code, validate state
+6. Exchange code for tokens (no client_secret — public client):
+      POST {token_endpoint}
+        grant_type=authorization_code, code={code}
+        redirect_uri=http://localhost:12345/callback
+        client_id=sixnet-device-enroll, code_verifier={code_verifier}
+      → response contains id_token
+7. POST {enrollUrl}/claim
+      Authorization: Bearer {id_token}
+      {"nodeId": "<local ZT node ID from sixnetd>"}
+      → 200: {"status":"enrolled","nodeId":"...","user":"...","network":"..."}
+8. On success: proceed to join + configure network as normal
+```
+
+### Protocol contracts (coordinate with six.net before changing)
+
+- `clientId` = `"sixnet-device-enroll"` (hardcoded — protocol contract, not config)
+- `redirect_uri` = `"http://localhost:12345/callback"` (registered in Authentik blueprint)
+- The node ID in step 7 comes from sixnetd — ask the daemon for the local node address
+
+### /client.json shape
+
+```json
+{
+  "networkId": "1c960272881cb4b5",
+  "name": "0x03.de",
+  "enrollUrl": "https://enroll.0x03.de",
+  "issuer": "https://auth.0x03.de/application/o/device-enrollment",
+  "clientId": "sixnet-device-enroll"
+}
+```
+
+`issuer` follows OIDC spec (RFC 8414) — append `/.well-known/openid-configuration` to
+discover all endpoints. Do not hardcode `authorization_endpoint` or `token_endpoint`.
+
+**Authentik note:** Authentik does not serve OIDC discovery at the root (`/`). The `issuer`
+must be the app-specific path: `{authentik_base}/application/o/{app_slug}`. The enroll app
+constructs this using `DEVICE_ENROLL_APP_SLUG` — a protocol constant that must match the
+Authentik blueprint slug (`device-enrollment`).
+
+### ENROLLMENT_MODE
+
+The `/claim` endpoint is only active when the server has `ENROLLMENT_MODE=org` (or `both`).
+`self-service` (default) returns 404 on `/claim`. This is a server-side config the admin
+sets in `deployment.env` — the client does not need to know the mode; a 404 means the
+server is not configured for Mode 2.
+
+### Reference (six.net)
+
+- Backend `/claim` endpoint: `~/projects/six.net/core/enroll/app/app.py`
+- Authentik public client blueprint: `~/projects/six.net/core/authentik/blueprints/device-enrollment-provider.yaml.template`
+- Security model + full design: `~/projects/six.net/docs/architecture/enrollment-security.md`
+- Bash end-to-end test (reference implementation): `~/projects/six.net/scripts/test-pkce-flow.sh`
+
+---
+
 ## Decisions
 
 **Tech stack — Swift/SwiftUI, native macOS menu bar app.**
