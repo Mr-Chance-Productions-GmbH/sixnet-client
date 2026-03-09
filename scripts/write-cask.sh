@@ -18,5 +18,10 @@ cask "sixnet-client" do
   depends_on formula: "Mr-Chance-Productions-GmbH/sixnet/sixnetd"
 
   app "SixnetClient.app"
+
+  postflight do
+    system_command "/usr/bin/xattr",
+      args: ["-rd", "com.apple.quarantine", "#{appdir}/SixnetClient.app"]
+  end
 end
 CASK
