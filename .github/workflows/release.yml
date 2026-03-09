@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project app/SixnetClient.xcodeproj \
+            -scheme SixnetClient \
+            -configuration Release \
+            CONFIGURATION_BUILD_DIR="$PWD/build" \
+            build
+
+      - name: Package DMG
+        run: |
+          hdiutil create \
+            -volname "Sixnet Client" \
+            -srcfolder "build/SixnetClient.app" \
+            -ov -format UDZO \
+            "build/SixnetClient-${{ env.VERSION }}.dmg"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "sixnet-client ${{ github.ref_name }}" \
+            --generate-notes \
+            "build/SixnetClient-${{ env.VERSION }}.dmg"
+
+      - name: Update Homebrew cask
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION=${{ env.VERSION }}
+          SHA=$(shasum -a 256 "build/SixnetClient-${VERSION}.dmg" | cut -d' ' -f1)
+
+          git clone \
+            https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/Mr-Chance-Productions-GmbH/homebrew-sixnet.git
+
+          python3 -c "
+import sys
+v, sha = sys.argv[1], sys.argv[2]
+print(f'''cask \"sixnet-client\" do
+  version \"{v}\"
+  sha256 \"{sha}\"
+  url \"https://github.com/Mr-Chance-Productions-GmbH/sixnet-client/releases/download/v{v}/SixnetClient-{v}.dmg\"
+
+  name \"Sixnet Client\"
+  desc \"macOS menu bar VPN client for sixnet\"
+  homepage \"https://github.com/Mr-Chance-Productions-GmbH/sixnet-client\"
+
+  depends_on formula: \"Mr-Chance-Productions-GmbH/sixnet/sixnetd\"
+
+  app \"SixnetClient.app\"
+end''')
+" "$VERSION" "$SHA" > homebrew-sixnet/Casks/sixnet-client.rb
+
+          cd homebrew-sixnet
+          git config user.email "ci@github.com"
+          git config user.name "GitHub Actions"
+          git add Casks/sixnet-client.rb
+          git commit -m "sixnet-client ${VERSION}"
+          git push
