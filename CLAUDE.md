@@ -181,10 +181,12 @@ Status visible at a glance, connect/disconnect without opening a full window.
 **Distribution — Homebrew Cask.**
 `brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client`
 This installs the .app and the sixnetd daemon (as a formula dependency) in one
-command. Homebrew Cask bypasses Gatekeeper automatically — no "unidentified
-developer" dialog. No Apple Developer account required.
+command. The cask's `postflight` block strips the macOS quarantine attribute
+automatically — no Gatekeeper dialog, no Apple Developer account, no notarization.
+Notarization is explicitly not used: submitting to Apple for approval contradicts
+the self-hosted, no-third-party-control design of this project.
 
-Uninstall is equally clean: `brew uninstall --cask sixnet-client && brew uninstall sixnetd`.
+Uninstall: `brew uninstall --cask sixnet-client && brew uninstall sixnetd`.
 
 **Privileged operations — via sixnetd daemon.**
 The Swift app never calls zerotier-cli directly. All privileged operations and

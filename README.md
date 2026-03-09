@@ -15,10 +15,11 @@ disconnect, and check status without ever opening a terminal.
 ## Build
 
 ```bash
-make build    # debug build
-make release  # release build
-make run      # build + launch
-make clean    # remove build artifacts
+make build                   # debug build
+make release                 # release build
+make dist VERSION=x.y.z      # release build + package DMG (local validation)
+make run                     # build + launch
+make clean                   # remove build artifacts
 ```
 
 ### Build artifacts
@@ -54,12 +55,17 @@ Makefile                    xcodebuild wrapper
 brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client
 ```
 
-This installs the app and the sixnetd daemon in one command. On first launch the
-app will ask for an admin password once to start the background service.
+This installs the app and the sixnetd daemon in one command. The app is not
+notarized — notarization would mean submitting to Apple for approval, which
+contradicts the self-hosted design of this project. The cask handles Gatekeeper
+automatically by stripping the quarantine attribute after install.
+
+On first launch the app will ask for an admin password once to start the
+background service.
 
 **Uninstall:**
 ```bash
-brew uninstall --cask sixnet-client sixnetd
+brew uninstall --cask sixnet-client && brew uninstall sixnetd
 ```
 
 No root required. The running sixnetd process exits on next reboot or can be
