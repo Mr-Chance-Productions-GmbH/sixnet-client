@@ -69,18 +69,33 @@ struct MenuBarView: View {
     }
 
     var aboutButton: some View {
-        Button("About...") {
+        menuItem("About...") {
+            var options: [NSApplication.AboutPanelOptionKey: Any] = [:]
+            if let logo = NSImage(named: "AppLogo") {
+                let natural = logo.size
+                let width: CGFloat = 256
+                let height = width * (natural.height / natural.width)
+                logo.size = NSSize(width: width, height: height)
+                options[.applicationIcon] = logo
+            }
             NSApp.activate(ignoringOtherApps: true)
-            NSApp.orderFrontStandardAboutPanel(nil)
+            NSApp.orderFrontStandardAboutPanel(options: options)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
     }
 
     var quitButton: some View {
-        Button("Quit") { NSApplication.shared.terminate(nil) }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+        menuItem("Quit") { NSApplication.shared.terminate(nil) }
+    }
+
+    func menuItem(_ label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 5)
+        .contentShape(Rectangle())
     }
 
     var headerStatusColor: Color {
