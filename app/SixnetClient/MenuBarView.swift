@@ -37,12 +37,16 @@ struct MenuBarView: View {
         }
     }
 
+    var appDisplayName: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Sixnet Client"
+    }
+
     var header: some View {
         HStack(spacing: 8) {
             Circle()
                 .fill(headerStatusColor)
                 .frame(width: 8, height: 8)
-            Text("Sixnet")
+            Text(appDisplayName)
                 .font(.headline)
             Spacer()
             if let nodeId = client.nodeId {
@@ -64,7 +68,7 @@ struct MenuBarView: View {
     }
 
     var quitButton: some View {
-        Button("Quit Sixnet") { NSApplication.shared.terminate(nil) }
+        Button("Quit \(appDisplayName)") { NSApplication.shared.terminate(nil) }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
     }
