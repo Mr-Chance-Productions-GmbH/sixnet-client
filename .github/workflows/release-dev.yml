@@ -33,6 +33,9 @@ jobs:
           /usr/libexec/PlistBuddy -c \
             "Set :CFBundleDisplayName 'Sixnet Client (dev)'" \
             "build/SixnetClient.app/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c \
+            "Set :CFBundleShortVersionString '${{ env.VERSION }}'" \
+            "build/SixnetClient.app/Contents/Info.plist"
           mv "build/SixnetClient.app" "build/SixnetClient Dev.app"
 
       - name: Package DMG

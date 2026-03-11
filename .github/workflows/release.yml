@@ -27,6 +27,12 @@ jobs:
             CONFIGURATION_BUILD_DIR="$PWD/build" \
             build
 
+      - name: Patch version
+        run: |
+          /usr/libexec/PlistBuddy -c \
+            "Set :CFBundleShortVersionString '${{ env.VERSION }}'" \
+            "build/SixnetClient.app/Contents/Info.plist"
+
       - name: Package DMG
         run: |
           hdiutil create \

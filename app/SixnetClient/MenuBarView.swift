@@ -29,6 +29,7 @@ struct MenuBarView: View {
 
             Divider()
 
+            aboutButton
             quitButton
         }
         .frame(width: 300)
@@ -62,6 +63,15 @@ struct MenuBarView: View {
     var addNetworkButton: some View {
         Button { showAddNetwork = true } label: {
             Label("Add Network", systemImage: "plus.circle")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+
+    var aboutButton: some View {
+        Button("About \(appDisplayName)") {
+            NSApp.activate(ignoringOtherApps: true)
+            NSApp.orderFrontStandardAboutPanel(nil)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
