@@ -50,10 +50,17 @@ struct MenuBarView: View {
             Text(appDisplayName)
                 .font(.headline)
             Spacer()
-            if let nodeId = client.nodeId {
-                Text(nodeId)
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .trailing, spacing: 2) {
+                if let nodeId = client.nodeId {
+                    Text(nodeId)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                if let v = client.daemonVersion {
+                    Text("daemon v\(v)")
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(.tertiary)
+                }
             }
         }
         .padding(.horizontal, 16)
