@@ -69,7 +69,7 @@ struct MenuBarView: View {
     }
 
     var aboutButton: some View {
-        Button("About \(appDisplayName)") {
+        Button("About...") {
             NSApp.activate(ignoringOtherApps: true)
             NSApp.orderFrontStandardAboutPanel(nil)
         }
@@ -78,7 +78,7 @@ struct MenuBarView: View {
     }
 
     var quitButton: some View {
-        Button("Quit \(appDisplayName)") { NSApplication.shared.terminate(nil) }
+        Button("Quit") { NSApplication.shared.terminate(nil) }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
     }
