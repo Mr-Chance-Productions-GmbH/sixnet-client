@@ -56,8 +56,8 @@ struct MenuBarView: View {
                         .font(.caption.monospaced())
                         .foregroundStyle(.secondary)
                 }
-                if let v = client.daemonVersion {
-                    Text("daemon v\(v)")
+                if let v = client.daemonVersionLine {
+                    Text(v)
                         .font(.caption2.monospaced())
                         .foregroundStyle(.tertiary)
                 }

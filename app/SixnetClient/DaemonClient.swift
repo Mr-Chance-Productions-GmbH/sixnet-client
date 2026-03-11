@@ -138,7 +138,7 @@ private func socketAlive() -> Bool {
 class DaemonClient: ObservableObject {
     @Published var networks: [Network] = []
     @Published var nodeId: String?
-    @Published var daemonVersion: String?
+    @Published var daemonVersionLine: String?  // "v0.3.0 / v1.16.1"
     @Published var daemonAlive = false
 
     private var pollTimer: Timer?
@@ -197,11 +197,18 @@ class DaemonClient: ObservableObject {
            resp["daemon"] as? String == "running" {
             daemonAlive = true
             nodeId = resp["nodeId"] as? String
-            daemonVersion = resp["version"] as? String
+            let sdVersion = resp["sixnetdVersion"] as? String
+            let ztVersion = resp["version"] as? String
+            switch (sdVersion, ztVersion) {
+            case let (sd?, zt?): daemonVersionLine = "daemon \(sd) / \(zt)"
+            case let (sd?, nil): daemonVersionLine = "daemon \(sd)"
+            case let (nil, zt?): daemonVersionLine = zt
+            default:             daemonVersionLine = nil
+            }
         } else {
             daemonAlive = false
             nodeId = nil
-            daemonVersion = nil
+            daemonVersionLine = nil
         }
 
         // Poll each configured network
