@@ -1,0 +1,75 @@
+name: Dev Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-dev:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=$(date +%Y.%m.%d).${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project app/SixnetClient.xcodeproj \
+            -scheme SixnetClient \
+            -configuration Release \
+            PRODUCT_BUNDLE_IDENTIFIER="de.mcp.sixnet.client.dev" \
+            CONFIGURATION_BUILD_DIR="$PWD/build" \
+            build
+
+      - name: Patch app for dev channel
+        run: |
+          /usr/libexec/PlistBuddy -c \
+            "Set :CFBundleDisplayName 'Sixnet Client (dev)'" \
+            "build/SixnetClient.app/Contents/Info.plist"
+          mv "build/SixnetClient.app" "build/SixnetClient Dev.app"
+
+      - name: Package DMG
+        run: |
+          hdiutil create \
+            -volname "Sixnet Client (dev)" \
+            -srcfolder "build/SixnetClient Dev.app" \
+            -ov -format UDZO \
+            "build/SixnetClient-dev-${{ env.VERSION }}.dmg"
+
+      - name: Publish dev release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete dev --yes 2>/dev/null || true
+          git push origin :refs/tags/dev 2>/dev/null || true
+          gh release create dev \
+            --prerelease \
+            --title "Development Build ${{ env.VERSION }}" \
+            --notes "Latest development build from main. Unstable." \
+            "build/SixnetClient-dev-${{ env.VERSION }}.dmg"
+
+      - name: Update Homebrew dev cask
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION=${{ env.VERSION }}
+          SHA=$(shasum -a 256 "build/SixnetClient-dev-${VERSION}.dmg" | cut -d' ' -f1)
+
+          git clone \
+            https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/Mr-Chance-Productions-GmbH/homebrew-sixnet.git
+
+          bash scripts/write-cask-dev.sh "$VERSION" "$SHA" homebrew-sixnet/Casks/sixnet-client-dev.rb
+
+          cd homebrew-sixnet
+          git config user.email "ci@github.com"
+          git config user.name "GitHub Actions"
+          git add Casks/sixnet-client-dev.rb
+          git commit -m "sixnet-client-dev ${VERSION}"
+          git push

@@ -120,17 +120,30 @@ struct NetworkRow: View {
     // MARK: State rows
 
     func connectedRow(state: NetworkState) -> some View {
-        HStack(spacing: 8) {
-            Text(state.mode.uppercased())
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            if let ip = state.assignedIP {
-                Text(ip)
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            Picker("Mode", selection: Binding(
+                get: { state.mode },
+                set: { newMode in
+                    guard newMode != state.mode else { return }
+                    Task { await client.connect(networkId: network.id, mode: newMode) }
+                }
+            )) {
+                Text("VPN").tag("vpn")
+                Text("LAN").tag("lan")
+                Text("EXIT").tag("exit")
             }
-            Spacer()
-            actionButton
+            .pickerStyle(.segmented)
+            .disabled(network.isBusy)
+
+            HStack {
+                if let ip = state.assignedIP {
+                    Text(ip)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                actionButton
+            }
         }
     }
 
