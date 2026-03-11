@@ -158,8 +158,11 @@ struct NetworkRow: View {
                 }
             )) {
                 Text("VPN").tag("vpn")
+                    .disabled(!state.availableModes.contains("vpn"))
                 Text("LAN").tag("lan")
+                    .disabled(!state.availableModes.contains("lan"))
                 Text("EXIT").tag("exit")
+                    .disabled(!state.availableModes.contains("exit"))
             }
             .pickerStyle(.segmented)
             .disabled(network.isBusy)

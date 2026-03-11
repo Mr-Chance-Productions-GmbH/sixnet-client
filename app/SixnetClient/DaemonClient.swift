@@ -54,8 +54,9 @@ struct SavedNetwork: Codable {
 
 struct NetworkState {
     let authorized: Bool
-    let mode: String        // "vpn" | "lan" | "exit" | "" (empty = disconnected)
+    let mode: String            // "vpn" | "lan" | "exit" | "" (empty = disconnected)
     let assignedIP: String?
+    let availableModes: [String] // ["vpn"] | ["vpn","lan"] | ["vpn","lan","exit"]
 
     var isConnected: Bool { mode == "vpn" || mode == "lan" || mode == "exit" }
 }
@@ -208,7 +209,8 @@ class DaemonClient: ObservableObject {
                 networks[i].state = NetworkState(
                     authorized: net["authorized"] as? Bool ?? false,
                     mode: net["mode"] as? String ?? "",
-                    assignedIP: net["assignedIP"] as? String
+                    assignedIP: net["assignedIP"] as? String,
+                    availableModes: net["availableModes"] as? [String] ?? ["vpn", "lan", "exit"]
                 )
             } else {
                 // Daemon alive but no network state: not joined
