@@ -19,9 +19,8 @@ cask "sixnet-client-dev" do
 
   app "SixnetClient Dev.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-      args: ["-rd", "com.apple.quarantine", "#{appdir}/SixnetClient Dev.app"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-rd", "com.apple.quarantine", "{{appdir}}/SixnetClient Dev.app"]
   end
 end
 CASK
